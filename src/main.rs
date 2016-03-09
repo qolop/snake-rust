@@ -95,7 +95,7 @@ impl Game {
 
 
     fn collide_with_food(&self) -> bool {
-        self.snake.collide_with_food(&self.food);
+        self.snake.collide_with_food(&self.food)
     }
 
     fn on_update(&mut self, args: piston_window::UpdateArgs) {
