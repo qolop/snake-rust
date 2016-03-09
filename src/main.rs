@@ -30,6 +30,16 @@ impl Snake {
     fn collide_with_food(&self, food: &Food) -> bool {
         self.p.iter().any(|&p| p == food.p)
     }
+
+    fn set_direction(&mut self, d: Direction) {
+        match (&self.d, &d) {
+            (&Direction::Up, &Direction::Down) |
+            (&Direction::Down, &Direction::Up) |
+            (&Direction::Left, &Direction::Right) |
+            (&Direction::Right, &Direction::Left) => {},
+            _ => self.d = d,
+        }
+    }
 }
 
 struct Food {
@@ -173,10 +183,10 @@ impl Game {
         match args {
             piston_window::Input::Press(b) => {
                 match b {
-                    Button::Keyboard(Key::Up) => self.snake.d = Direction::Up,
-                    Button::Keyboard(Key::Down) => self.snake.d = Direction::Down,
-                    Button::Keyboard(Key::Left) => self.snake.d = Direction::Left,
-                    Button::Keyboard(Key::Right) => self.snake.d = Direction::Right,
+                    Button::Keyboard(Key::Up) => self.snake.set_direction(Direction::Up),
+                    Button::Keyboard(Key::Down) => self.snake.set_direction(Direction::Down),
+                    Button::Keyboard(Key::Left) => self.snake.set_direction(Direction::Left),
+                    Button::Keyboard(Key::Right) => self.snake.set_direction(Direction::Right),
                     Button::Keyboard(Key::Return) => self.state = GameState::Paused,
                     Button::Keyboard(Key::R) => self.state = GameState::Playing,
                     _ => {},
