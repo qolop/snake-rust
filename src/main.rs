@@ -172,9 +172,9 @@ impl Game {
 
                 rectangle(GREEN, square, t, g);
             }
-            rectangle(RED, square, c.transform.trans((self.food.p.0 * self.tile_size as i32) as f64,
-                                                     (self.food.p.1 * self.tile_size as i32) as f64), g);
-
+            let x = (self.food.p.0 * self.tile_size as i32) as f64;
+            let y = (self.food.p.1 * self.tile_size as i32) as f64;
+            rectangle(RED, square, c.transform.trans(x, y), g);
         });
     }
 
