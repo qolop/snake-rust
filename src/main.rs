@@ -26,6 +26,10 @@ impl Snake {
         let h = self.p.front().unwrap();
         self.p.iter().skip(1).any(|&p| p == *h)
     }
+
+    fn collide_with_food(&self, food: &Food) -> bool {
+        self.p.iter().any(|&p| p == food.p)
+    }
 }
 
 struct Food {
@@ -89,7 +93,7 @@ impl Game {
     }
 
     fn collide_with_food(&self) -> bool {
-        self.snake.p.iter().any(|&p| p == self.food.p)
+        self.snake.collide_with_food(&self.food);
     }
 
     fn on_update(&mut self, args: piston_window::UpdateArgs) {
