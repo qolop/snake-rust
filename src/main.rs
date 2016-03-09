@@ -93,7 +93,6 @@ impl Game {
         self.food.p = (x, y);
     }
 
-
     fn collide_with_food(&self) -> bool {
         self.snake.collide_with_food(&self.food)
     }
