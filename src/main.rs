@@ -188,7 +188,12 @@ impl Game {
                     Button::Keyboard(Key::Left) => self.snake.set_direction(Direction::Left),
                     Button::Keyboard(Key::Right) => self.snake.set_direction(Direction::Right),
                     Button::Keyboard(Key::Return) => self.state = GameState::Paused,
-                    Button::Keyboard(Key::R) => self.state = GameState::Playing,
+                    Button::Keyboard(Key::R) => {
+                        match self.state {
+                            GameState::Paused => self.state = GameState::Playing,
+                            _ => {},
+                        }
+                    },
                     _ => {},
                 }
             },
