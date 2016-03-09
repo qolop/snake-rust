@@ -37,13 +37,6 @@ struct Food {
 }
 
 impl Food {
-    fn spawn(&mut self, rows: u16, cols: u16) {
-        use rand::{thread_rng, sample};
-        let mut rng = thread_rng();
-        let x = sample(&mut rng, 0..cols, 1).pop().unwrap() as i32;
-        let y = sample(&mut rng, 0..rows, 1).pop().unwrap() as i32;
-        self.p = (x, y);
-    }
 }
 
 
@@ -82,7 +75,7 @@ impl Game {
             time: 0.0,
             state: GameState::Playing,
         };
-        g.food.spawn(g.rows, g.cols);
+        g.spawn_food();
         g.snake.p.push_front((0, 0));
         g.snake.p.push_front((1, 0));
         g.snake.p.push_front((2, 0));
@@ -91,6 +84,15 @@ impl Game {
         g.snake.p.push_front((5, 0));
         g
     }
+
+    fn spawn_food(&mut self) {
+        use rand::{thread_rng, sample};
+        let mut rng = thread_rng();
+        let x = sample(&mut rng, 0..self.cols, 1).pop().unwrap() as i32;
+        let y = sample(&mut rng, 0..self.rows, 1).pop().unwrap() as i32;
+        self.food.p = (x, y);
+    }
+
 
     fn collide_with_food(&self) -> bool {
         self.snake.collide_with_food(&self.food);
@@ -146,7 +148,7 @@ impl Game {
         }
 
         if self.collide_with_food() {
-            self.food.spawn(self.rows, self.cols);
+            self.spawn_food();
         }
     }
 
