@@ -2,10 +2,10 @@ extern crate piston_window;
 extern crate rand;
 
 
-const BLACK : [f32; 4] = [0.0, 0.0, 0.0, 1.0];
-const GREEN : [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-const RED : [f32; 4] = [1.0, 0.0, 0.0, 1.0];
-
+const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
+const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
+const TILE_SIZE: u8 = 20;
 
 enum Direction {
     Up,
@@ -36,8 +36,18 @@ impl Snake {
             (&Direction::Up, &Direction::Down) |
             (&Direction::Down, &Direction::Up) |
             (&Direction::Left, &Direction::Right) |
-            (&Direction::Right, &Direction::Left) => {},
+            (&Direction::Right, &Direction::Left) => {}
             _ => self.d = d,
+        }
+    }
+
+    fn collide_with_edge(&self, rows: i32, cols: i32) -> bool {
+        let h = self.p.front().unwrap();
+        // both rows and cols are both 30 rn
+        if (h.0 >= rows) | (h.0 < 0) | (h.1 >= cols) | (h.1 < 0) {
+            return true;
+        } else {
+            return false;
         }
     }
 }
@@ -46,8 +56,7 @@ struct Food {
     p: (i32, i32),
 }
 
-impl Food {
-}
+impl Food {}
 
 
 enum GameState {
@@ -73,14 +82,12 @@ impl Game {
         let mut g = Game {
             rows: 30,
             cols: 30,
-            tile_size: 20,
+            tile_size: TILE_SIZE,
             snake: Snake {
                 p: std::collections::VecDeque::new(),
                 d: Direction::None,
             },
-            food: Food {
-                p: (0, 0),
-            },
+            food: Food { p: (0, 0) },
             update_time: 0.08,
             time: 0.0,
             state: GameState::Playing,
@@ -111,7 +118,7 @@ impl Game {
         match self.state {
             GameState::Paused => return,
             GameState::GameOver => return,
-            _ => {},
+            _ => {}
         }
 
         self.time += args.dt;
@@ -127,27 +134,18 @@ impl Game {
             Direction::Down => p.1 += 1,
             Direction::Left => p.0 -= 1,
             Direction::Right => p.0 += 1,
-            Direction::None => {},
-        }
-        if p.0 < 0 {
-            p.0 = self.cols as i32 - 1;
-        } else if p.0 >= self.cols as i32 {
-            p.0 -= self.cols as i32;
+            Direction::None => {}
         }
 
-        if p.1 < 0 {
-            p.1 = self.rows as i32 - 1;
-        } else if p.1 >= self.rows as i32 {
-            p.1 -= self.rows as i32;
-        }
-
-        if self.snake.collide_with_tail() {
+        if self.snake.collide_with_tail() |
+           self.snake.collide_with_edge(self.rows as i32, self.cols as i32) {
+            println!("Game over.");
             self.state = GameState::GameOver;
             return;
         }
 
         match self.snake.d {
-            Direction::None => {},
+            Direction::None => {}
             _ => {
                 self.snake.p.push_front(p);
                 if !self.collide_with_food() {
@@ -191,24 +189,24 @@ impl Game {
                     Button::Keyboard(Key::R) => {
                         match self.state {
                             GameState::Paused => self.state = GameState::Playing,
-                            _ => {},
+                            _ => {}
                         }
-                    },
-                    _ => {},
+                    }
+                    _ => {}
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
-
 }
 
 
 fn main() {
-    let window: piston_window::PistonWindow = piston_window::WindowSettings::new("snake", [600, 600])
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
+    let window: piston_window::PistonWindow = piston_window::WindowSettings::new("snake",
+                                                                                 [600, 600])
+                                                  .exit_on_esc(true)
+                                                  .build()
+                                                  .unwrap();
 
     let mut game = Game::new();
 
@@ -218,7 +216,7 @@ fn main() {
             Some(Event::Update(a)) => game.on_update(a),
             Some(Event::Render(a)) => game.on_render(a, e),
             Some(Event::Input(i)) => game.on_input(i),
-            _ => {},
+            _ => {}
         }
     }
 }
