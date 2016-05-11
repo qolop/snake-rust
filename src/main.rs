@@ -1,10 +1,9 @@
 extern crate piston_window;
 extern crate rand;
 
-
-const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+const GREY: [f32; 4] = [0.5, 0.5, 0.5, 1.0];
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
+const ORANGE: [f32; 4] = [1.0, 1.0, 0.0, 1.0];
 const TILE_SIZE: u8 = 20;
 
 enum Direction {
@@ -42,13 +41,7 @@ impl Snake {
     }
 
     fn collide_with_edge(&self, rows: i32, cols: i32) -> bool {
-        let h = self.p.front().unwrap();
-        // both rows and cols are both 30 rn
-        if (h.0 >= rows) | (h.0 < 0) | (h.1 >= cols) | (h.1 < 0) {
-            return true;
-        } else {
-            return false;
-        }
+        self.p.iter().any(|&p| (p.0 < 0) | (p.1 < 0) | (p.1 > 600) | (p.0 > 600))
     }
 }
 
@@ -72,7 +65,7 @@ struct Game {
     tile_size: u8,
     snake: Snake,
     food: Food,
-    update_time: f64,
+    update_freq: f64,
     time: f64,
     state: GameState,
 }
@@ -88,11 +81,12 @@ impl Game {
                 d: Direction::None,
             },
             food: Food { p: (0, 0) },
-            update_time: 0.08,
+            update_freq: 0.08,
             time: 0.0,
             state: GameState::Playing,
         };
         g.spawn_food();
+        // Initiate snake with VecDeques
         g.snake.p.push_front((0, 0));
         g.snake.p.push_front((1, 0));
         g.snake.p.push_front((2, 0));
@@ -122,7 +116,7 @@ impl Game {
         }
 
         self.time += args.dt;
-        if self.time < self.update_time {
+        if self.time < self.update_freq {
             return;
         } else {
             self.time = 0.0
@@ -163,7 +157,7 @@ impl Game {
         e.draw_2d(|c, g| {
             use piston_window::{Transformed, clear, rectangle};
             let square = rectangle::square(0.0, 0.0, (1 * self.tile_size as i32) as f64);
-            clear(BLACK, g);
+            clear(GREY, g);
             for &(x, y) in &self.snake.p {
                 let t = c.transform.trans((x * self.tile_size as i32) as f64,
                                           (y * self.tile_size as i32) as f64);
@@ -172,7 +166,7 @@ impl Game {
             }
             let x = (self.food.p.0 * self.tile_size as i32) as f64;
             let y = (self.food.p.1 * self.tile_size as i32) as f64;
-            rectangle(RED, square, c.transform.trans(x, y), g);
+            rectangle(ORANGE, square, c.transform.trans(x, y), g);
         });
     }
 
@@ -189,6 +183,12 @@ impl Game {
                     Button::Keyboard(Key::R) => {
                         match self.state {
                             GameState::Paused => self.state = GameState::Playing,
+                            _ => {}
+                        }
+                    }
+                    Button::Keyboard(Key::Space) => {
+                        match self.state {
+                            GameState::GameOver => self.state = GameState::Playing,
                             _ => {}
                         }
                     }
