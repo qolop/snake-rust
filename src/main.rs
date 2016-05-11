@@ -41,7 +41,7 @@ impl Snake {
     }
 
     fn collide_with_edge(&self, rows: i32, cols: i32) -> bool {
-        self.p.iter().any(|&p| (p.0 < 0) | (p.1 < 0) | (p.1 > 600) | (p.0 > 600))
+        self.p.iter().any(|&p| (p.0 < 0) | (p.1 < 0) | (p.1 >= cols) | (p.0 >= rows))
     }
 }
 
@@ -186,12 +186,17 @@ impl Game {
                             _ => {}
                         }
                     }
+                    /*
                     Button::Keyboard(Key::Space) => {
                         match self.state {
-                            GameState::GameOver => self.state = GameState::Playing,
+                            GameState::GameOver => {
+                                self.state = GameState::Playing;
+                                Game::new();
+                            }
                             _ => {}
                         }
                     }
+                    */
                     _ => {}
                 }
             }
