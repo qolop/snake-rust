@@ -1,6 +1,7 @@
 extern crate piston_window;
 extern crate rand;
 
+// Colors
 const GREY: [f32; 4] = [0.5, 0.5, 0.5, 1.0];
 const BLUE: [f32; 4] = [0.0, 0.0, 1.0, 1.0];
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
@@ -8,6 +9,8 @@ const YELLOW: [f32; 4] = [1.0, 1.0, 0.0, 1.0];
 const PURPLE: [f32; 4] = [0.5, 0.0, 0.5, 1.0];
 const ORANGE: [f32; 4] = [0.8, 0.5, 0.0, 1.0];
 const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
+
+// Default game values
 const TILE_SIZE: u8 = 20;
 const ROWS: u16 = 30;
 const COLS: u16 = 30;
@@ -57,6 +60,7 @@ struct Food {
     f: FoodType,
 }
 
+// Fruit
 enum FoodType {
     Apple,
     Grape,
@@ -102,12 +106,9 @@ impl Game {
         };
         g.spawn_food();
         // Initiate snake with VecDeques
-        g.snake.p.push_front((0, 0));
-        g.snake.p.push_front((1, 0));
-        g.snake.p.push_front((2, 0));
-        g.snake.p.push_front((3, 0));
-        g.snake.p.push_front((4, 0));
-        g.snake.p.push_front((5, 0));
+        for i in 0..5 {
+            self.snake.p.push_front((i, 0));
+        }
         g
     }
 
@@ -138,7 +139,14 @@ impl Game {
         match self.state {
             GameState::Paused => return,
             GameState::GameOver => {
-                self.time = 0.0;
+                self.snake = Snake {
+                    p: std::collections::VecDeque::new(),
+                    d: Direction::None,
+                };
+
+                for i in 0..5 {
+                    self.snake.p.push_front((i, 0));
+                }
                 self.state = GameState::Playing;
                 return;
             }
@@ -162,7 +170,7 @@ impl Game {
 
         if self.snake.collide_with_tail() | self.snake.collide_with_edge() {
             println!("Game over.");
-            // self.state = GameState::GameOver;
+            self.state = GameState::GameOver;
             return;
         }
 
@@ -187,12 +195,8 @@ impl Game {
             let square = rectangle::square(0.0, 0.0, (1 * self.tile_size as i32) as f64);
             clear(GREY, g);
             for &(x, y) in &self.snake.p {
-                // println!("{:?}", &(x, y));
-                // println!("x * self.tile_size as i32:\n{:?}",
-                // &x * self.tile_size as i32);
                 let t = c.transform.trans((x * self.tile_size as i32) as f64,
                                           (y * self.tile_size as i32) as f64);
-                // println!("t var is: {:?}", t);
                 rectangle(GREEN, square, t, g);
             }
             let x = (self.food.p.0 * self.tile_size as i32) as f64;
@@ -217,7 +221,12 @@ impl Game {
                     Button::Keyboard(Key::Down) => self.snake.set_direction(Direction::Down),
                     Button::Keyboard(Key::Left) => self.snake.set_direction(Direction::Left),
                     Button::Keyboard(Key::Right) => self.snake.set_direction(Direction::Right),
-                    Button::Keyboard(Key::Return) => self.state = GameState::Paused,
+                    Button::Keyboard(Key::Space) => {
+                        self.state = match self.state {
+                            GameState::Paused | GameState::GameOver => GameState::Playing,
+                            GameState::Playing => GameState::Paused,
+                        }
+                    }
                     Button::Keyboard(Key::R) => {
                         match self.state {
                             GameState::Paused => self.state = GameState::Playing,
