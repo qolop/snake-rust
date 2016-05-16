@@ -14,6 +14,7 @@ const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 const TILE_SIZE: u8 = 20;
 const ROWS: u16 = 30;
 const COLS: u16 = 30;
+const SNAKE_LENGTH: i32 = 5;
 
 enum Direction {
     Up,
@@ -106,8 +107,8 @@ impl Game {
         };
         g.spawn_food();
         // Initiate snake with VecDeques
-        for i in 0..5 {
-            self.snake.p.push_front((i, 0));
+        for i in 0..SNAKE_LENGTH + 1 {
+            g.snake.p.push_front((i, 0));
         }
         g
     }
@@ -144,7 +145,7 @@ impl Game {
                     d: Direction::None,
                 };
 
-                for i in 0..5 {
+                for i in 0..SNAKE_LENGTH + 1 {
                     self.snake.p.push_front((i, 0));
                 }
                 self.state = GameState::Playing;
@@ -201,12 +202,12 @@ impl Game {
             }
             let x = (self.food.p.0 * self.tile_size as i32) as f64;
             let y = (self.food.p.1 * self.tile_size as i32) as f64;
-            let food_color = match self.food.f {
-                FoodType::Apple => RED,
-                FoodType::Banana => YELLOW,
-                FoodType::Grape => PURPLE,
-                FoodType::Blueberry => BLUE,
-                FoodType::Orange => ORANGE,
+            let food_color = match &self.food.f {
+                &FoodType::Apple => RED,
+                &FoodType::Banana => YELLOW,
+                &FoodType::Grape => PURPLE,
+                &FoodType::Blueberry => BLUE,
+                &FoodType::Orange => ORANGE,
             };
             rectangle(food_color, square, c.transform.trans(x, y), g);
         });
