@@ -140,6 +140,7 @@ impl Game {
         match self.state {
             GameState::Paused => return,
             GameState::GameOver => {
+                println!("Ready to restart.");
                 self.snake = Snake {
                     p: std::collections::VecDeque::new(),
                     d: Direction::None,
@@ -155,12 +156,15 @@ impl Game {
         }
 
         self.time += args.dt;
+
         if self.time < self.update_freq {
             return;
         } else {
             self.time = 0.0
         }
+
         let mut p = self.snake.p.front().unwrap().clone();
+
         match self.snake.d {
             Direction::Up => p.1 -= 1,
             Direction::Down => p.1 += 1,
@@ -171,10 +175,13 @@ impl Game {
 
         if self.snake.collide_with_tail() | self.snake.collide_with_edge() {
             println!("Game over.");
+            let score = self.snake.p.len() as i32 - SNAKE_LENGTH - 1;
+            println!("You ate {} pieces of fruit for a score of {}.",
+                     score,
+                     score * 50);
             self.state = GameState::GameOver;
             return;
         }
-
         match self.snake.d {
             Direction::None => {}
             _ => {
@@ -195,11 +202,13 @@ impl Game {
             use piston_window::{Transformed, clear, rectangle};
             let square = rectangle::square(0.0, 0.0, (1 * self.tile_size as i32) as f64);
             clear(GREY, g);
+
             for &(x, y) in &self.snake.p {
                 let t = c.transform.trans((x * self.tile_size as i32) as f64,
                                           (y * self.tile_size as i32) as f64);
                 rectangle(GREEN, square, t, g);
             }
+
             let x = (self.food.p.0 * self.tile_size as i32) as f64;
             let y = (self.food.p.1 * self.tile_size as i32) as f64;
             let food_color = match &self.food.f {
@@ -224,8 +233,8 @@ impl Game {
                     Button::Keyboard(Key::Right) => self.snake.set_direction(Direction::Right),
                     Button::Keyboard(Key::Space) => {
                         self.state = match self.state {
-                            GameState::Paused | GameState::GameOver => GameState::Playing,
                             GameState::Playing => GameState::Paused,
+                            _ => GameState::Playing,
                         }
                     }
                     Button::Keyboard(Key::R) => {
