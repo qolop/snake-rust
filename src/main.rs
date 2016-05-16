@@ -2,9 +2,15 @@ extern crate piston_window;
 extern crate rand;
 
 const GREY: [f32; 4] = [0.5, 0.5, 0.5, 1.0];
+const BLUE: [f32; 4] = [0.0, 0.0, 1.0, 1.0];
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-const ORANGE: [f32; 4] = [1.0, 1.0, 0.0, 1.0];
+const YELLOW: [f32; 4] = [1.0, 1.0, 0.0, 1.0];
+const PURPLE: [f32; 4] = [0.5, 0.0, 0.5, 1.0];
+const ORANGE: [f32; 4] = [0.5, 0.0, 1.0, 1.0];
+const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 const TILE_SIZE: u8 = 20;
+const ROWS: u16 = 30;
+const COLS: u16 = 30;
 
 enum Direction {
     Up,
@@ -13,7 +19,6 @@ enum Direction {
     Right,
     None,
 }
-
 
 struct Snake {
     p: std::collections::VecDeque<(i32, i32)>,
@@ -40,24 +45,31 @@ impl Snake {
         }
     }
 
-    fn collide_with_edge(&self, rows: i32, cols: i32) -> bool {
-        self.p.iter().any(|&p| (p.0 < 0) | (p.1 < 0) | (p.1 >= cols) | (p.0 >= rows))
+    fn collide_with_edge(&self) -> bool {
+        self.p.iter().any(|&p| {
+            (p.0 < 0) | (p.1 < 0) | (p.1 < 0) | (p.1 >= COLS as i32) | (p.0 >= ROWS as i32)
+        })
     }
 }
 
 struct Food {
     p: (i32, i32),
+    f: FoodType,
 }
 
-impl Food {}
-
+enum FoodType {
+    Apple,
+    Grape,
+    Blueberry,
+    Orange,
+    Banana,
+}
 
 enum GameState {
     Playing,
     Paused,
     GameOver,
 }
-
 
 struct Game {
     rows: u16,
@@ -73,14 +85,17 @@ struct Game {
 impl Game {
     fn new() -> Game {
         let mut g = Game {
-            rows: 30,
-            cols: 30,
+            rows: ROWS,
+            cols: COLS,
             tile_size: TILE_SIZE,
             snake: Snake {
                 p: std::collections::VecDeque::new(),
                 d: Direction::None,
             },
-            food: Food { p: (0, 0) },
+            food: Food {
+                p: (0, 0),
+                f: FoodType::Apple,
+            },
             update_freq: 0.08,
             time: 0.0,
             state: GameState::Playing,
@@ -99,9 +114,20 @@ impl Game {
     fn spawn_food(&mut self) {
         use rand::{thread_rng, sample};
         let mut rng = thread_rng();
+        // This is a fancy way for us to generate a random value between 0 and number
+        // of columns and rows, and the 1 in the args samples 1 of them.
+        // rng: &mut R, iterable: I, amount: usize
         let x = sample(&mut rng, 0..self.cols, 1).pop().unwrap() as i32;
         let y = sample(&mut rng, 0..self.rows, 1).pop().unwrap() as i32;
-        self.food.p = (x, y);
+        self.food.p = (x, y); // Find out wtf sample does.
+
+        self.food.f = match self.food.f {
+            FoodType::Apple => FoodType::Banana,
+            FoodType::Banana => FoodType::Grape,
+            FoodType::Grape => FoodType::Blueberry,
+            FoodType::Blueberry => FoodType::Orange,
+            FoodType::Orange => FoodType::Apple,
+        };
     }
 
     fn collide_with_food(&self) -> bool {
@@ -111,7 +137,11 @@ impl Game {
     fn on_update(&mut self, args: piston_window::UpdateArgs) {
         match self.state {
             GameState::Paused => return,
-            GameState::GameOver => return,
+            GameState::GameOver => {
+                self.time = 0.0;
+                self.state = GameState::Playing;
+                return;
+            }
             _ => {}
         }
 
@@ -121,7 +151,6 @@ impl Game {
         } else {
             self.time = 0.0
         }
-
         let mut p = self.snake.p.front().unwrap().clone();
         match self.snake.d {
             Direction::Up => p.1 -= 1,
@@ -131,10 +160,9 @@ impl Game {
             Direction::None => {}
         }
 
-        if self.snake.collide_with_tail() |
-           self.snake.collide_with_edge(self.rows as i32, self.cols as i32) {
+        if self.snake.collide_with_tail() | self.snake.collide_with_edge() {
             println!("Game over.");
-            self.state = GameState::GameOver;
+            // self.state = GameState::GameOver;
             return;
         }
 
@@ -159,14 +187,24 @@ impl Game {
             let square = rectangle::square(0.0, 0.0, (1 * self.tile_size as i32) as f64);
             clear(GREY, g);
             for &(x, y) in &self.snake.p {
+                // println!("{:?}", &(x, y));
+                // println!("x * self.tile_size as i32:\n{:?}",
+                // &x * self.tile_size as i32);
                 let t = c.transform.trans((x * self.tile_size as i32) as f64,
                                           (y * self.tile_size as i32) as f64);
-
+                // println!("t var is: {:?}", t);
                 rectangle(GREEN, square, t, g);
             }
             let x = (self.food.p.0 * self.tile_size as i32) as f64;
             let y = (self.food.p.1 * self.tile_size as i32) as f64;
-            rectangle(ORANGE, square, c.transform.trans(x, y), g);
+            let food_color = match self.food.f {
+                FoodType::Apple => RED,
+                FoodType::Banana => YELLOW,
+                FoodType::Grape => PURPLE,
+                FoodType::Blueberry => BLUE,
+                FoodType::Orange => ORANGE,
+            };
+            rectangle(food_color, square, c.transform.trans(x, y), g);
         });
     }
 
@@ -186,17 +224,6 @@ impl Game {
                             _ => {}
                         }
                     }
-                    /*
-                    Button::Keyboard(Key::Space) => {
-                        match self.state {
-                            GameState::GameOver => {
-                                self.state = GameState::Playing;
-                                Game::new();
-                            }
-                            _ => {}
-                        }
-                    }
-                    */
                     _ => {}
                 }
             }
@@ -209,10 +236,9 @@ impl Game {
 fn main() {
     let window: piston_window::PistonWindow = piston_window::WindowSettings::new("snake",
                                                                                  [600, 600])
-                                                  .exit_on_esc(true)
-                                                  .build()
-                                                  .unwrap();
-
+        .exit_on_esc(true)
+        .build()
+        .unwrap();
     let mut game = Game::new();
 
     for e in window {
