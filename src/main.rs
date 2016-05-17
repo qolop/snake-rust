@@ -131,9 +131,6 @@ impl Game {
         // of columns and rows, and the 1 in the args samples 1 of them.
         // rng: &mut R, iterable: I, amount: usize
         let mut rng = thread_rng();
-        // This is a fancy way for us to generate a random value between 0 and number
-        // of columns and rows, and the 1 in the args samples 1 of them.
-        // rng: &mut R, iterable: I, amount: usize
         let x = sample(&mut rng, 0..self.cols, 1).pop().unwrap() as i32;
         let y = sample(&mut rng, 0..self.rows, 1).pop().unwrap() as i32;
         self.food.p = (x, y); // Find out wtf sample does.
