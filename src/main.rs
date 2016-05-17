@@ -135,12 +135,12 @@ impl Game {
         let y = sample(&mut rng, 0..self.rows, 1).pop().unwrap() as i32;
         self.food.p = (x, y); // Find out wtf sample does.
 
-        self.food.f = match self.food.f {
-            FoodType::Apple => FoodType::Banana,
-            FoodType::Banana => FoodType::Grape,
-            FoodType::Grape => FoodType::Blueberry,
-            FoodType::Blueberry => FoodType::Orange,
-            FoodType::Orange => FoodType::Apple,
+        self.food.f = match &self.food.f {
+            &FoodType::Apple => FoodType::Banana,
+            &FoodType::Banana => FoodType::Grape,
+            &FoodType::Grape => FoodType::Blueberry,
+            &FoodType::Blueberry => FoodType::Orange,
+            &FoodType::Orange => FoodType::Apple,
         };
         // for c in self.snake.p {
         // match c {
