@@ -11,6 +11,8 @@ const PURPLE: [f32; 4] = [0.5, 0.0, 0.5, 1.0];
 const ORANGE: [f32; 4] = [0.8, 0.5, 0.0, 1.0];
 const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 
+const SCORE_MULTIPLIER: i32 = 50;
+
 // Default game values
 const TILE_SIZE: u8 = 20;
 const ROWS: u16 = 30;
@@ -201,7 +203,7 @@ impl Game {
             let score = self.snake.p.len() as i32 - SNAKE_LENGTH - 1;
             println!("You ate {} pieces of fruit for a score of {}.",
                      score,
-                     score * 50);
+                     score * SCORE_MULTIPLIER);
             self.state = GameState::GameOver;
             return;
         }
