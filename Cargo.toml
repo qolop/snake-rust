@@ -4,5 +4,5 @@ version = "0.1.0"
 authors = ["Emanuele Di Giacomo <emanueledigiacomo@gmail.com>"]
 
 [dependencies]
-piston_window = "~0.38"
+piston_window = "0.47.0"
 rand = "0.3"

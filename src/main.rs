@@ -1,5 +1,6 @@
 extern crate piston_window;
 extern crate rand;
+use piston_window::*;
 use std::collections::VecDeque;
 
 // Colors
@@ -64,16 +65,6 @@ struct Food {
     f: FoodType,
 }
 
-// impl Food {
-// fn new() {
-// self.p = range((0, 30), (0, 30)).collect();
-// println!("{:?}", self.p);
-// }
-//
-// fn is_free_block(&mut self) {}
-// }
-//
-
 // Fruit
 enum FoodType {
     Apple,
@@ -102,6 +93,7 @@ struct Game {
 
 impl Game {
     fn new() -> Game {
+
         let mut g = Game {
             rows: ROWS,
             cols: COLS,
@@ -134,7 +126,7 @@ impl Game {
         // rng: &mut R, iterable: I, amount: usize
         let x = sample(&mut rng, 0..self.cols, 1).pop().unwrap() as i32;
         let y = sample(&mut rng, 0..self.rows, 1).pop().unwrap() as i32;
-        self.food.p = (x, y); // Find out wtf sample does.
+        self.food.p = (x, y);
 
         self.food.f = match &self.food.f {
             &FoodType::Apple => FoodType::Banana,
@@ -143,25 +135,13 @@ impl Game {
             &FoodType::Blueberry => FoodType::Orange,
             &FoodType::Orange => FoodType::Apple,
         };
-        // for c in self.snake.p {
-        // match c {
-        // (x, y) => {
-        // println!("{:?}", (x, y));
-        // println!("Initiated new value");
-        // x = sample(&mut rng, 0..self.cols, 1).pop().unwrap() as i32;
-        // y = sample(&mut rng, 0..self.rows, 1).pop().unwrap() as i32;
-        // self.food.p = (x, y);
-        // }
-        // }
-        // }
-        //
     }
 
     fn collide_with_food(&self) -> bool {
         self.snake.collide_with_food(&self.food)
     }
 
-    fn on_update(&mut self, args: piston_window::UpdateArgs) {
+    fn on_update(&mut self, args: UpdateArgs) {
         match self.state {
             GameState::Paused => return,
             GameState::GameOver => {
@@ -208,7 +188,6 @@ impl Game {
             return;
         }
 
-
         match self.snake.d {
             Direction::None => {}
             _ => {
@@ -224,52 +203,43 @@ impl Game {
         }
     }
 
-    fn on_render(&mut self, _args: piston_window::RenderArgs, e: piston_window::PistonWindow) {
-        e.draw_2d(|c, g| {
-            use piston_window::{Transformed, clear, rectangle};
-            let square = rectangle::square(0.0, 0.0, (1 * self.tile_size as i32) as f64);
-            clear(GREY, g);
+    fn on_render(&self, c: Context, g: &mut G2d) {
+        let square = rectangle::square(0.0, 0.0, (1 * self.tile_size as i32) as f64);
+        clear(GREY, g);
 
-            for &(x, y) in &self.snake.p {
-                let t = c.transform.trans((x * self.tile_size as i32) as f64,
-                                          (y * self.tile_size as i32) as f64);
-                rectangle(GREEN, square, t, g);
-            }
+        for &(x, y) in &self.snake.p {
+            let t = c.transform.trans((x * self.tile_size as i32) as f64,
+                                      (y * self.tile_size as i32) as f64);
+            rectangle(GREEN, square, t, g);
+        }
 
-            let x = (self.food.p.0 * self.tile_size as i32) as f64;
-            let y = (self.food.p.1 * self.tile_size as i32) as f64;
-            let food_color = match &self.food.f {
-                &FoodType::Apple => RED,
-                &FoodType::Banana => YELLOW,
-                &FoodType::Grape => PURPLE,
-                &FoodType::Blueberry => BLUE,
-                &FoodType::Orange => ORANGE,
-            };
-            rectangle(food_color, square, c.transform.trans(x, y), g);
-        });
+        let x = (self.food.p.0 * self.tile_size as i32) as f64;
+        let y = (self.food.p.1 * self.tile_size as i32) as f64;
+        let food_color = match &self.food.f {
+            &FoodType::Apple => RED,
+            &FoodType::Banana => YELLOW,
+            &FoodType::Grape => PURPLE,
+            &FoodType::Blueberry => BLUE,
+            &FoodType::Orange => ORANGE,
+        };
+        rectangle(food_color, square, c.transform.trans(x, y), g);
     }
 
-    fn on_input(&mut self, args: piston_window::Input) {
-        use piston_window::{Button, Key};
+    fn on_input(&mut self, args: Button) {
         match args {
-            piston_window::Input::Press(b) => {
-                match b {
-                    Button::Keyboard(Key::Up) => self.snake.set_direction(Direction::Up),
-                    Button::Keyboard(Key::Down) => self.snake.set_direction(Direction::Down),
-                    Button::Keyboard(Key::Left) => self.snake.set_direction(Direction::Left),
-                    Button::Keyboard(Key::Right) => self.snake.set_direction(Direction::Right),
-                    Button::Keyboard(Key::Space) => {
-                        self.state = match self.state {
-                            GameState::Playing => GameState::Paused,
-                            _ => GameState::Playing,
-                        }
-                    }
-                    Button::Keyboard(Key::R) => {
-                        match self.state {
-                            GameState::Paused => self.state = GameState::Playing,
-                            _ => {}
-                        }
-                    }
+            Button::Keyboard(Key::Up) => self.snake.set_direction(Direction::Up),
+            Button::Keyboard(Key::Down) => self.snake.set_direction(Direction::Down),
+            Button::Keyboard(Key::Left) => self.snake.set_direction(Direction::Left),
+            Button::Keyboard(Key::Right) => self.snake.set_direction(Direction::Right),
+            Button::Keyboard(Key::Space) => {
+                self.state = match self.state {
+                    GameState::Playing => GameState::Paused,
+                    _ => GameState::Playing,
+                }
+            }
+            Button::Keyboard(Key::R) => {
+                match self.state {
+                    GameState::Paused => self.state = GameState::Playing,
                     _ => {}
                 }
             }
@@ -280,19 +250,23 @@ impl Game {
 
 
 fn main() {
-    let window: piston_window::PistonWindow = piston_window::WindowSettings::new("snake",
-                                                                                 [600, 600])
+
+    let mut game = Game::new();
+    let opengl = OpenGL::V3_2;
+    let mut window: PistonWindow = WindowSettings::new("5n4k3", (600, 600))
         .exit_on_esc(true)
+        .opengl(opengl)
         .build()
         .unwrap();
-    let mut game = Game::new();
 
-    for e in window {
-        use piston_window::Event;
-        match e.event {
-            Some(Event::Update(a)) => game.on_update(a),
-            Some(Event::Render(a)) => game.on_render(a, e),
-            Some(Event::Input(i)) => game.on_input(i),
+    while let Some(e) = window.next() {
+        match e {
+            Event::Render(_) => {
+                window.draw_2d(&e, |c, g| game.on_render(c, g));
+            }
+
+            Event::Input(Input::Press(a)) => game.on_input(a),
+            Event::Update(a) => game.on_update(a),
             _ => {}
         }
     }
