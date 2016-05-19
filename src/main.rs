@@ -142,9 +142,9 @@ impl Game {
     }
 
     fn on_update(&mut self, args: UpdateArgs) {
-        match self.state {
-            GameState::Paused => return,
-            GameState::GameOver => {
+        match &self.state {
+            &GameState::Paused => return,
+            &GameState::GameOver => {
                 self.snake = Snake {
                     p: std::collections::VecDeque::new(),
                     d: Direction::None,
@@ -170,12 +170,12 @@ impl Game {
 
         let mut p = self.snake.p.front().unwrap().clone();
 
-        match self.snake.d {
-            Direction::Up => p.1 -= 1,
-            Direction::Down => p.1 += 1,
-            Direction::Left => p.0 -= 1,
-            Direction::Right => p.0 += 1,
-            Direction::None => {}
+        match &self.snake.d {
+            &Direction::Up => p.1 -= 1,
+            &Direction::Down => p.1 += 1,
+            &Direction::Left => p.0 -= 1,
+            &Direction::Right => p.0 += 1,
+            &Direction::None => {}
         }
 
         if self.snake.collide_with_tail() | self.snake.collide_with_edge() {
@@ -188,8 +188,8 @@ impl Game {
             return;
         }
 
-        match self.snake.d {
-            Direction::None => {}
+        match &self.snake.d {
+            &Direction::None => {}
             _ => {
                 self.snake.p.push_front(p);
                 if !self.collide_with_food() {
@@ -225,8 +225,8 @@ impl Game {
         rectangle(food_color, square, c.transform.trans(x, y), g);
     }
 
-    fn on_input(&mut self, args: Button) {
-        match args {
+    fn on_input(&mut self, args: &Button) {
+        match *args {
             Button::Keyboard(Key::Up) => self.snake.set_direction(Direction::Up),
             Button::Keyboard(Key::Down) => self.snake.set_direction(Direction::Down),
             Button::Keyboard(Key::Left) => self.snake.set_direction(Direction::Left),
@@ -238,8 +238,8 @@ impl Game {
                 }
             }
             Button::Keyboard(Key::R) => {
-                match self.state {
-                    GameState::Paused => self.state = GameState::Playing,
+                match &self.state {
+                    &GameState::Paused => self.state = GameState::Playing,
                     _ => {}
                 }
             }
@@ -265,7 +265,7 @@ fn main() {
                 window.draw_2d(&e, |c, g| game.on_render(c, g));
             }
 
-            Event::Input(Input::Press(a)) => game.on_input(a),
+            Event::Input(Input::Press(a)) => game.on_input(&a),
             Event::Update(a) => game.on_update(a),
             _ => {}
         }
