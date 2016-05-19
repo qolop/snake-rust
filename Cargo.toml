@@ -5,4 +5,4 @@ authors = ["Emanuele Di Giacomo <emanueledigiacomo@gmail.com>"]
 
 [dependencies]
 piston_window = "0.47.0"
-rand = "0.3"
+rand = "0.3.14"
