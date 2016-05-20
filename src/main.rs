@@ -141,7 +141,7 @@ impl Game {
         self.snake.collide_with_food(&self.food)
     }
 
-    fn on_update(&mut self, args: UpdateArgs) {
+    fn on_update(&mut self, args: &UpdateArgs) {
         match &self.state {
             &GameState::Paused => return,
             &GameState::GameOver => {
@@ -266,7 +266,7 @@ fn main() {
             }
 
             Event::Input(Input::Press(a)) => game.on_input(&a),
-            Event::Update(a) => game.on_update(a),
+            Event::Update(a) => game.on_update(&a),
             _ => {}
         }
     }
