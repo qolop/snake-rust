@@ -106,6 +106,7 @@ impl Game {
                 p: (0, 0),
                 f: FoodType::Apple,
             },
+
             update_freq: 0.08,
             time: 0.0,
             state: GameState::Playing,
@@ -227,10 +228,10 @@ impl Game {
 
     fn on_input(&mut self, args: &Button) {
         match args {
-            &Button::Keyboard(Key::Up) => self.snake.set_direction(Direction::Up),
-            &Button::Keyboard(Key::Down) => self.snake.set_direction(Direction::Down),
-            &Button::Keyboard(Key::Left) => self.snake.set_direction(Direction::Left),
-            &Button::Keyboard(Key::Right) => self.snake.set_direction(Direction::Right),
+            &Button::Keyboard(Key::Up) | &Button::Keyboard(Key::W) => self.snake.set_direction(Direction::Up),
+            &Button::Keyboard(Key::Down) | &Button::Keyboard(Key::S) => self.snake.set_direction(Direction::Down),
+            &Button::Keyboard(Key::Left) | &Button::Keyboard(Key::A) => self.snake.set_direction(Direction::Left),
+            &Button::Keyboard(Key::Right) | &Button::Keyboard(Key::D)=> self.snake.set_direction(Direction::Right),
             &Button::Keyboard(Key::Space) => {
                 self.state = match self.state {
                     GameState::Playing => GameState::Paused,
