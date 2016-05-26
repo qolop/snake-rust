@@ -151,7 +151,7 @@ impl Game {
                     d: Direction::None,
                 };
 
-                for i in 0..SNAKE_LENGTH + 1 {
+                for i in 0..SNAKE_LENGTH + 1 { // Foo = inclusive, Bar = exclusive
                     self.snake.p.push_front((i, 0));
                 }
                 self.state = GameState::Playing;
