@@ -3,14 +3,15 @@ extern crate rand;
 use piston_window::*;
 use std::collections::VecDeque;
 
+type Color = [f32; 4];
 // Colors
-const GREY: [f32; 4] = [0.5, 0.5, 0.5, 1.0];
-const BLUE: [f32; 4] = [0.0, 0.0, 1.0, 1.0];
-const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-const YELLOW: [f32; 4] = [1.0, 1.0, 0.0, 1.0];
-const PURPLE: [f32; 4] = [0.5, 0.0, 0.5, 1.0];
-const ORANGE: [f32; 4] = [0.8, 0.5, 0.0, 1.0];
-const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
+const GREY: Color = [0.5, 0.5, 0.5, 1.0];
+const BLUE: Color = [0.0, 0.0, 1.0, 1.0];
+const GREEN: Color = [0.0, 1.0, 0.0, 1.0];
+const YELLOW: Color = [1.0, 1.0, 0.0, 1.0];
+const PURPLE: Color = [0.5, 0.0, 0.5, 1.0];
+const ORANGE: Color = [0.8, 0.5, 0.0, 1.0];
+const RED: Color = [1.0, 0.0, 0.0, 1.0];
 
 const SCORE_MULTIPLIER: i32 = 50;
 
