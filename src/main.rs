@@ -133,7 +133,7 @@ impl Game {
             }
         }
 
-        self.food.p = ring[rand::thread_rng().gen_range(1, ring.len())];
+        self.food.p = ring[rand::thread_rng().gen_range(0, ring.len())];
 
         self.food.f = match &self.food.f {
             &FoodType::Apple => FoodType::Banana,
