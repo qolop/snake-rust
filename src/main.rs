@@ -82,8 +82,6 @@ enum GameState {
 }
 
 struct Game {
-    rows: u16,
-    cols: u16,
     tile_size: u8,
     snake: Snake,
     food: Food,
@@ -96,8 +94,6 @@ impl Game {
     fn new() -> Game {
 
         let mut g = Game {
-            rows: ROWS,
-            cols: COLS,
             tile_size: TILE_SIZE,
             snake: Snake {
                 p: std::collections::VecDeque::new(),
@@ -121,14 +117,23 @@ impl Game {
     }
 
     fn spawn_food(&mut self) {
-        use rand::{thread_rng, sample};
-        let mut rng = thread_rng();
-        // This is a fancy way for us to generate a random value between 0 and number
-        // of columns and rows, and the 1 in the args samples 1 of them.
-        // rng: &mut R, iterable: I, amount: usize
-        let x = sample(&mut rng, 0..self.cols, 1).pop().unwrap() as i32;
-        let y = sample(&mut rng, 0..self.rows, 1).pop().unwrap() as i32;
-        self.food.p = (x, y);
+        // The purpose of making a new VecDeque is so that we can track what coordinates have been
+        // occupied by the snake, and which ones haven't. Upon eating food, a new VecDeque is generated
+        // using the values on the board that the snake is not occupying. This makes it so the food
+        // can't be generated on a point occupied by the snake upon generation.
+        use rand::Rng;
+        let mut ring: VecDeque<(i32, i32)> = VecDeque::with_capacity(900);
+        for col in 0..COLS as i32 {
+            for row in 0..ROWS as i32 {
+                // We use a functional approach here. If we created another for loop, we would see
+                // ring value be (961 * snake length) - the occupied coordinates.
+                if !self.snake.p.iter().any(|&p| p == (row, col)) {
+                    ring.push_front((row, col));
+                }
+            }
+        }
+
+        self.food.p = ring[rand::thread_rng().gen_range(1, ring.len())];
 
         self.food.f = match &self.food.f {
             &FoodType::Apple => FoodType::Banana,
@@ -148,11 +153,12 @@ impl Game {
             &GameState::Paused => return,
             &GameState::GameOver => {
                 self.snake = Snake {
-                    p: std::collections::VecDeque::new(),
+                    p: VecDeque::new(),
                     d: Direction::None,
                 };
 
-                for i in 0..SNAKE_LENGTH + 1 { // Foo = inclusive, Bar = exclusive
+                for i in 0..SNAKE_LENGTH + 1 {
+                    // Foo = inclusive, Bar = exclusive
                     self.snake.p.push_front((i, 0));
                 }
                 self.state = GameState::Playing;
@@ -229,10 +235,14 @@ impl Game {
 
     fn on_input(&mut self, args: &Button) {
         match args {
-            &Button::Keyboard(Key::Up) | &Button::Keyboard(Key::W) => self.snake.set_direction(Direction::Up),
-            &Button::Keyboard(Key::Down) | &Button::Keyboard(Key::S) => self.snake.set_direction(Direction::Down),
-            &Button::Keyboard(Key::Left) | &Button::Keyboard(Key::A) => self.snake.set_direction(Direction::Left),
-            &Button::Keyboard(Key::Right) | &Button::Keyboard(Key::D)=> self.snake.set_direction(Direction::Right),
+            &Button::Keyboard(Key::Up) |
+            &Button::Keyboard(Key::W) => self.snake.set_direction(Direction::Up),
+            &Button::Keyboard(Key::Down) |
+            &Button::Keyboard(Key::S) => self.snake.set_direction(Direction::Down),
+            &Button::Keyboard(Key::Left) |
+            &Button::Keyboard(Key::A) => self.snake.set_direction(Direction::Left),
+            &Button::Keyboard(Key::Right) |
+            &Button::Keyboard(Key::D) => self.snake.set_direction(Direction::Right),
             &Button::Keyboard(Key::Space) => {
                 self.state = match self.state {
                     GameState::Playing => GameState::Paused,
