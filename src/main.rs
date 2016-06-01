@@ -92,7 +92,6 @@ struct Game {
 
 impl Game {
     fn new() -> Game {
-
         let mut g = Game {
             tile_size: TILE_SIZE,
             snake: Snake {
@@ -118,11 +117,12 @@ impl Game {
 
     fn spawn_food(&mut self) {
         // The purpose of making a new VecDeque is so that we can track what coordinates have been
-        // occupied by the snake, and which ones haven't. Upon eating food, a new VecDeque is generated
-        // using the values on the board that the snake is not occupying. This makes it so the food
-        // can't be generated on a point occupied by the snake upon generation.
+        // occupied by the snake, and which ones haven't. Upon eating food, a new VecDeque is
+        // generated  using the values on the board that the snake is not occupying. This makes it
+        // so the food can't be generated on a point occupied by the snake upon generation.
         use rand::Rng;
         let mut ring: VecDeque<(i32, i32)> = VecDeque::with_capacity(900);
+
         for col in 0..COLS as i32 {
             for row in 0..ROWS as i32 {
                 // We use a functional approach here. If we created another for loop, we would see
@@ -133,7 +133,13 @@ impl Game {
             }
         }
 
-        self.food.p = ring[rand::thread_rng().gen_range(0, ring.len())];
+        // If the person was a snake prodigy and filled every point on the grid, we'd have to handle
+        // that somehow. We make the game end if every point is filled.
+        if ring.len() > 0 {
+            self.food.p = ring[rand::thread_rng().gen_range(0, ring.len())];
+        } else {
+            self.game_over();
+        }
 
         self.food.f = match &self.food.f {
             &FoodType::Apple => FoodType::Banana,
@@ -146,6 +152,16 @@ impl Game {
 
     fn collide_with_food(&self) -> bool {
         self.snake.collide_with_food(&self.food)
+    }
+
+    fn game_over(&mut self) {
+        println!("Game over.");
+        let score = self.snake.p.len() as i32 - SNAKE_LENGTH - 1;
+        println!("You ate {} pieces of fruit for a score of {}.",
+                 score,
+                 score * SCORE_MULTIPLIER);
+        self.state = GameState::GameOver;
+        return;
     }
 
     fn on_update(&mut self, args: &UpdateArgs) {
@@ -168,6 +184,7 @@ impl Game {
             _ => {}
         }
 
+
         self.time += args.dt;
 
         if self.time < self.update_freq {
@@ -187,13 +204,7 @@ impl Game {
         }
 
         if self.snake.collide_with_tail() | self.snake.collide_with_edge() {
-            println!("Game over.");
-            let score = self.snake.p.len() as i32 - SNAKE_LENGTH - 1;
-            println!("You ate {} pieces of fruit for a score of {}.",
-                     score,
-                     score * SCORE_MULTIPLIER);
-            self.state = GameState::GameOver;
-            return;
+            self.game_over();
         }
 
         match &self.snake.d {
@@ -223,14 +234,20 @@ impl Game {
 
         let x = (self.food.p.0 * self.tile_size as i32) as f64;
         let y = (self.food.p.1 * self.tile_size as i32) as f64;
-        let food_color = match &self.food.f {
+
+        let food_color = self.get_color(&self.food.f);
+
+        rectangle(food_color, square, c.transform.trans(x, y), g);
+    }
+
+    fn get_color(&self, f: &FoodType) -> Color {
+        match f {
             &FoodType::Apple => RED,
             &FoodType::Banana => YELLOW,
             &FoodType::Grape => PURPLE,
             &FoodType::Blueberry => BLUE,
             &FoodType::Orange => ORANGE,
-        };
-        rectangle(food_color, square, c.transform.trans(x, y), g);
+        }
     }
 
     fn on_input(&mut self, args: &Button) {
