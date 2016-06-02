@@ -108,7 +108,7 @@ impl Game {
             state: GameState::Playing,
         };
         g.spawn_food();
-        // Initiate snake with VecDeques
+        // Initiate snake by pushing values to it (VecDeque)
         for i in 0..SNAKE_LENGTH + 1 {
             g.snake.p.push_front((i, 0));
         }
@@ -118,8 +118,8 @@ impl Game {
     fn spawn_food(&mut self) {
         // The purpose of making a new VecDeque is so that we can track what coordinates have been
         // occupied by the snake, and which ones haven't. Upon eating food, a new VecDeque is
-        // generated  using the values on the board that the snake is not occupying. This makes it
-        // so the food can't be generated on a point occupied by the snake upon generation.
+        // generated using the values on the board that are free. This makes it so the food can't
+        // be generated on a point occupied by the snake when the user eats food.
         use rand::Rng;
         let mut ring: VecDeque<(i32, i32)> = VecDeque::with_capacity(900);
 
@@ -141,6 +141,7 @@ impl Game {
             self.game_over();
         }
 
+        // We want the fruit to appear in a certain order. The fruit after _ will always be _
         self.food.f = match &self.food.f {
             &FoodType::Apple => FoodType::Banana,
             &FoodType::Banana => FoodType::Grape,
@@ -150,6 +151,8 @@ impl Game {
         };
     }
 
+    // Funny how I just noticed this. We call a function of the same name from an implementation
+    // of a different structure (in this case, the snake structure).
     fn collide_with_food(&self) -> bool {
         self.snake.collide_with_food(&self.food)
     }
@@ -264,12 +267,6 @@ impl Game {
                 self.state = match self.state {
                     GameState::Playing => GameState::Paused,
                     _ => GameState::Playing,
-                }
-            }
-            &Button::Keyboard(Key::R) => {
-                match &self.state {
-                    &GameState::Paused => self.state = GameState::Playing,
-                    _ => {}
                 }
             }
             _ => {}
