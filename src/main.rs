@@ -254,16 +254,19 @@ impl Game {
     }
 
     fn on_input(&mut self, args: &Button) {
-        match args {
-            &Button::Keyboard(Key::Up) |
-            &Button::Keyboard(Key::W) => self.snake.set_direction(Direction::Up),
-            &Button::Keyboard(Key::Down) |
-            &Button::Keyboard(Key::S) => self.snake.set_direction(Direction::Down),
-            &Button::Keyboard(Key::Left) |
-            &Button::Keyboard(Key::A) => self.snake.set_direction(Direction::Left),
-            &Button::Keyboard(Key::Right) |
-            &Button::Keyboard(Key::D) => self.snake.set_direction(Direction::Right),
-            &Button::Keyboard(Key::Space) => {
+        use piston_window::Button::Keyboard;
+        use piston_window::Key;
+
+        match *args {
+            Keyboard(Key::Up) |
+            Keyboard(Key::W) => self.snake.set_direction(Direction::Up),
+            Keyboard(Key::Down) |
+            Keyboard(Key::S) => self.snake.set_direction(Direction::Down),
+            Keyboard(Key::Left) |
+            Keyboard(Key::A) => self.snake.set_direction(Direction::Left),
+            Keyboard(Key::Right) |
+            Keyboard(Key::D) => self.snake.set_direction(Direction::Right),
+            Keyboard(Key::Space) => {
                 self.state = match self.state {
                     GameState::Playing => GameState::Paused,
                     _ => GameState::Playing,
