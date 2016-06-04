@@ -17,8 +17,8 @@ const SCORE_MULTIPLIER: i32 = 50;
 
 // Default game values
 const TILE_SIZE: u8 = 20;
-const ROWS: u16 = 30;
-const COLS: u16 = 30;
+const ROWS: u8 = 30;
+const COLS: u8 = 30;
 const SNAKE_LENGTH: i32 = 5;
 
 enum Direction {
@@ -168,20 +168,20 @@ impl Game {
     }
 
     fn on_update(&mut self, args: &UpdateArgs) {
-        match &self.state {
-            &GameState::Paused => return,
-            &GameState::GameOver => {
+        match self.state {
+            GameState::Paused => return,
+            GameState::GameOver => {
                 self.snake = Snake {
                     p: VecDeque::new(),
                     d: Direction::None,
                 };
 
                 for i in 0..SNAKE_LENGTH + 1 {
-                    // Foo = inclusive, Bar = exclusive
                     self.snake.p.push_front((i, 0));
                 }
+
                 self.state = GameState::Playing;
-                println!("Restarted.");
+                println!("Ready to play again.");
                 return;
             }
             _ => {}
@@ -215,6 +215,7 @@ impl Game {
             _ => {
                 self.snake.p.push_front(p);
                 if !self.collide_with_food() {
+                    // This is why we use a VecDeque -- pop_back and pop_front
                     self.snake.p.pop_back();
                 }
             }
