@@ -41,7 +41,7 @@ impl Snake {
     }
 
     fn collide_with_food(&self, food: &Food) -> bool {
-        self.p.iter().any(|&p| p == food.p)
+        self.p[0] == food.p
     }
 
     fn set_direction(&mut self, d: Direction) {
@@ -55,9 +55,7 @@ impl Snake {
     }
 
     fn collide_with_edge(&self) -> bool {
-        self.p.iter().any(|&p| {
-            (p.0 < 0) | (p.1 < 0) | (p.1 < 0) | (p.1 >= COLS as i32) | (p.0 >= ROWS as i32)
-        })
+        (self.p[0].0 < 0) | (self.p[0].1 < 0) | (self.p[0].1 < 0) | (self.p[0].1 >= COLS as i32) | (self.p[0].0 >= ROWS as i32)
     }
 }
 
@@ -142,12 +140,12 @@ impl Game {
         }
 
         // We want the fruit to appear in a certain order. The fruit after _ will always be _
-        self.food.f = match &self.food.f {
-            &FoodType::Apple => FoodType::Banana,
-            &FoodType::Banana => FoodType::Grape,
-            &FoodType::Grape => FoodType::Blueberry,
-            &FoodType::Blueberry => FoodType::Orange,
-            &FoodType::Orange => FoodType::Apple,
+        self.food.f = match self.food.f {
+            FoodType::Apple => FoodType::Banana,
+            FoodType::Banana => FoodType::Grape,
+            FoodType::Grape => FoodType::Blueberry,
+            FoodType::Blueberry => FoodType::Orange,
+            FoodType::Orange => FoodType::Apple,
         };
     }
 
