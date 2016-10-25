@@ -2,6 +2,8 @@ extern crate piston_window;
 extern crate rand;
 use piston_window::*;
 use std::collections::VecDeque;
+mod snake;
+use snake::*;
 
 type Color = [f32; 4];
 // Colors
@@ -15,63 +17,12 @@ const RED: Color = [1.0, 0.0, 0.0, 1.0];
 
 const SCORE_MULTIPLIER: i32 = 50;
 
+const SNAKE_LENGTH: i32 = 5;
+
 // Default game values
 const TILE_SIZE: u8 = 20;
 const ROWS: u8 = 30;
 const COLS: u8 = 30;
-const SNAKE_LENGTH: i32 = 5;
-
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-    None,
-}
-
-struct Snake {
-    p: VecDeque<(i32, i32)>,
-    d: Direction,
-}
-
-impl Snake {
-    fn collide_with_tail(&self) -> bool {
-        let h = self.p.front().unwrap();
-        self.p.iter().skip(1).any(|&p| p == *h)
-    }
-
-    fn collide_with_food(&self, food: &Food) -> bool {
-        self.p[0] == food.p
-    }
-
-    fn set_direction(&mut self, d: Direction) {
-        match (&self.d, &d) {
-            (&Direction::Up, &Direction::Down) |
-            (&Direction::Down, &Direction::Up) |
-            (&Direction::Left, &Direction::Right) |
-            (&Direction::Right, &Direction::Left) => {}
-            _ => self.d = d,
-        }
-    }
-
-    fn collide_with_edge(&self) -> bool {
-        (self.p[0].0 < 0) | (self.p[0].1 < 0) | (self.p[0].1 < 0) | (self.p[0].1 >= COLS as i32) | (self.p[0].0 >= ROWS as i32)
-    }
-}
-
-struct Food {
-    p: (i32, i32),
-    f: FoodType,
-}
-
-// Fruit
-enum FoodType {
-    Apple,
-    Grape,
-    Blueberry,
-    Orange,
-    Banana,
-}
 
 enum GameState {
     Playing,
@@ -92,15 +43,8 @@ impl Game {
     fn new() -> Game {
         let mut g = Game {
             tile_size: TILE_SIZE,
-            snake: Snake {
-                p: std::collections::VecDeque::new(),
-                d: Direction::None,
-            },
-            food: Food {
-                p: (0, 0),
-                f: FoodType::Apple,
-            },
-
+            snake: Snake::new(),
+            food: Food::new(),
             update_freq: 0.08,
             time: 0.0,
             state: GameState::Playing,
@@ -236,8 +180,7 @@ impl Game {
             rectangle(GREEN, square, t, g);
         }
 
-        let x = (self.food.p.0 * self.tile_size as i32) as f64;
-        let y = (self.food.p.1 * self.tile_size as i32) as f64;
+        let (x, y) = ((self.food.p.0 * self.tile_size as i32) as f64, (self.food.p.1 * self.tile_size as i32) as f64);
 
         let food_color = self.get_color(&self.food.f);
 
