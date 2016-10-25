@@ -139,16 +139,18 @@ impl Game {
             self.game_over();
         }
 
-        // We want the fruit to appear in a certain order. The fruit after _ will always be _
-        self.food.f = match self.food.f {
+        self.food.f = self.generate_random_food();
+    }
+
+    fn generate_random_food(&mut self) -> FoodType {
+        match self.food.f {
             FoodType::Apple => FoodType::Banana,
             FoodType::Banana => FoodType::Grape,
             FoodType::Grape => FoodType::Blueberry,
             FoodType::Blueberry => FoodType::Orange,
             FoodType::Orange => FoodType::Apple,
-        };
+        }
     }
-
     // Funny how I just noticed this. We call a function of the same name from an implementation
     // of a different structure (in this case, the snake structure).
     fn collide_with_food(&self) -> bool {
@@ -243,12 +245,12 @@ impl Game {
     }
 
     fn get_color(&self, f: &FoodType) -> Color {
-        match f {
-            &FoodType::Apple => RED,
-            &FoodType::Banana => YELLOW,
-            &FoodType::Grape => PURPLE,
-            &FoodType::Blueberry => BLUE,
-            &FoodType::Orange => ORANGE,
+        match *f {
+            FoodType::Apple => RED,
+            FoodType::Banana => YELLOW,
+            FoodType::Grape => PURPLE,
+            FoodType::Blueberry => BLUE,
+            FoodType::Orange => ORANGE,
         }
     }
 
